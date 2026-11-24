@@ -1,0 +1,4 @@
+# Banco SQLite e imagens das folhas: dados dos alunos, nunca vão para o git
+dados/
+.env
+docs/
