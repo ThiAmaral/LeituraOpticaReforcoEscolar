@@ -223,10 +223,21 @@ function edicoes_existentes(): array
     return $lista;
 }
 
-/** Disciplinas das provas. Uma prova de uma disciplina só já preenche todas as questões com ela. */
+/**
+ * Disciplinas das provas.
+ * Uma prova de uma disciplina só já preenche todas as questões com ela. A ordem define a cor
+ * de cada disciplina no gabarito: acrescente novas no fim para não trocar as cores existentes.
+ */
 function disciplinas(): array
 {
-    return ['Matemática', 'Língua Portuguesa'];
+    return [
+        'Matemática',
+        'Língua Portuguesa',
+        'Ciências',
+        'História',
+        'Geografia',
+        'Língua Estrangeira',
+    ];
 }
 
 const TODAS_DISCIPLINAS = 'todas';
