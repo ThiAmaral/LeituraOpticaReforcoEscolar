@@ -2,3 +2,5 @@
 dados/
 .env
 docs/
+# Cache do Python (leitor óptico)
+__pycache__/

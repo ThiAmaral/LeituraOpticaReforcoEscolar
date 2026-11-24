@@ -1,0 +1,58 @@
+{
+    "expo": {
+        "name": "Corretor de provas",
+        "slug": "leitura-optica",
+        "version": "1.0.0",
+        "scheme": "leituraoptica",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "br.ufes.leituraoptica"
+        },
+        "android": {
+            "package": "br.ufes.leituraoptica",
+            "adaptiveIcon": {
+                "backgroundColor": "#E6F4FE",
+                "foregroundImage": "./assets/android-icon-foreground.png",
+                "backgroundImage": "./assets/android-icon-background.png",
+                "monochromeImage": "./assets/android-icon-monochrome.png"
+            },
+            "predictiveBackGestureEnabled": false
+        },
+        "web": {
+            "favicon": "./assets/favicon.png",
+            "bundler": "metro",
+            "output": "single"
+        },
+        "plugins": [
+            "expo-router",
+            "expo-sqlite",
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Para fotografar as folhas de resposta dos alunos.",
+                    "recordAudioAndroid": false
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Para escolher uma foto já tirada de uma folha de respostas.",
+                    "cameraPermission": "Para fotografar as folhas de resposta dos alunos.",
+                    "microphonePermission": false
+                }
+            ],
+            [
+                "react-native-document-scanner-plugin",
+                {
+                    "cameraPermission": "Para fotografar as folhas de resposta dos alunos."
+                }
+            ]
+        ],
+        "experiments": {
+            "typedRoutes": true
+        }
+    }
+}

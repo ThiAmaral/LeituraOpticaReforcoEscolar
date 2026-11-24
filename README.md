@@ -6,12 +6,22 @@ são fotografadas pelo aplicativo.
 
 ```
 web/          Painel em PHP (XAMPP): provas, gabarito, relatórios
-  src/        Banco (banco.php), login (auth.php) e operações (servicos.php); fechada ao navegador
-mobile/       Aplicativo (em construção)
-ferramentas/  Cadastro de professores pela linha de comando
-docs/         Requisitos (requisitos.md)
+  api/        API JSON para o aplicativo (controlador frontal)
+  src/        Banco (banco.php), login (auth.php), operações (servicos.php) e rotas da API (api.php)
+worker/       Leitor óptico em Python/OpenCV (só diz qual bolinha foi marcada)
+mobile/       Aplicativo em Expo (React Native): fotografa as folhas de cada turma
+ferramentas/  Cadastro de professores, gerador de folhas de teste e validador da leitura
+exemplos/     Folhas fictícias para testar o leitor
 dados/        Criada sozinha: banco SQLite e imagens das folhas (fora do git)
 ```
+
+O leitor precisa do Python 3.10+ com as bibliotecas do `worker/requirements.txt`:
+
+```bash
+pip install -r worker/requirements.txt
+```
+
+Como rodar o aplicativo está no [README do app](mobile/README.md).
 
 O que o sistema faz, tela por tela, está em [docs/requisitos.md](docs/requisitos.md).
 
