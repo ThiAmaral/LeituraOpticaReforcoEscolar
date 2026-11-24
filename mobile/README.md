@@ -56,7 +56,8 @@ npx tsc --noEmit
 npx expo lint
 ```
 
-## Futuro
+## Abrir uma prova pelo QR code (teste)
 
-O app já tem o endereço `leituraoptica://`. O QR code da página da prova no web vai abrir
-`leituraoptica://prova/<id>`, direto na prova.
+A página da prova no web mostra um QR code com `http://<servidor>/abrir.php?prova=<id>`.
+Essa página abre `leituraoptica://prova/<id>`, que cai direto na tela da prova. Só funciona
+com o app instalado (development build); o Expo Go não abre o endereço `leituraoptica://`.

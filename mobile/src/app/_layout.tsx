@@ -4,6 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Carregando, cor } from '@/componentes/ui';
 import { ProvedorDeSessao, useSessao } from '@/lib/sessao';
 
+// Aberto por um link (QR code da prova, leituraoptica://prova/<id>), o "voltar" leva à lista de provas.
+export const unstable_settings = { initialRouteName: 'index' };
+
 export default function Raiz() {
   return (
     <ProvedorDeSessao>

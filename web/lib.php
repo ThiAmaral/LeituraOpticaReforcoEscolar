@@ -170,6 +170,27 @@ function url(string $pagina, array $params = []): string
     return $pagina . ($params ? '?' . http_build_query($params) : '');
 }
 
+/**
+ * Endereço absoluto do painel visto pelo celular (ex.: http://192.168.0.10/leitura), para o QR
+ * da prova. Aberto como "localhost", troca pelo IP do computador na rede, que é o que o
+ * celular enxerga; devolve [endereço, se o IP foi deduzido].
+ */
+function endereco_do_painel(array $servidor): array
+{
+    $https = ($servidor['HTTPS'] ?? '') !== '' && $servidor['HTTPS'] !== 'off';
+    $host = $servidor['HTTP_HOST'] ?? 'localhost';
+    $pasta = rtrim(str_replace('\\', '/', dirname($servidor['SCRIPT_NAME'] ?? '/')), '/');
+    $deduzido = false;
+    if (preg_match('#^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$#i', $host, $m)) {
+        $ip = gethostbyname(gethostname());
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !str_starts_with($ip, '127.')) {
+            $host = $ip . ($m[2] ?? '');
+            $deduzido = true;
+        }
+    }
+    return [($https ? 'https' : 'http') . "://$host$pasta", $deduzido];
+}
+
 function pct(float $acertos, float $total): ?float
 {
     return $total > 0 ? round(100 * $acertos / $total, 1) : null;
