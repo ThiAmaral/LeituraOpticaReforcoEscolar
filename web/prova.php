@@ -66,6 +66,10 @@ function link_relatorio(int $id, array $params, string $ancora = ''): string
 
 $alvo = $filtro !== '' ? 'na turma ' . $filtro : (count($turmas) > 1 ? 'em todas as turmas' : '');
 
+// QR code que abre esta prova no aplicativo (teste), via abrir.php.
+[$painel, $ipDeduzido] = endereco_do_painel($_SERVER);
+$linkApp = $painel . '/' . url('abrir.php', ['prova' => $id]);
+
 cabecalho($prova['nome'], '', 'index.php');
 ?>
 
@@ -78,6 +82,36 @@ cabecalho($prova['nome'], '', 'index.php');
 <p class="so-impressao meta">Relatório <?= $filtro !== '' ? 'da turma ' . e($filtro) : (count($turmas) > 1 ? 'de todas as turmas' : '') ?> gerado em <?= date('d/m/Y') ?> às <?= date('H:i') ?>, com <?= count($visiveis) ?> folha(s).</p>
 
 <?php if ($aviso): ?><p class="aviso"><?= e($aviso) ?></p><?php endif; ?>
+
+<section class="qr-app nao-imprimir" aria-labelledby="titulo-qr-app">
+  <div id="qr-app" class="qr-imagem" data-link="<?= e($linkApp) ?>" role="img" aria-label="QR code que abre esta prova no aplicativo"></div>
+  <div>
+    <h2 id="titulo-qr-app">Abrir no aplicativo</h2>
+    <p class="dica">Aponte a câmera do celular para o QR code: a prova abre direto no aplicativo, pronta para escanear as folhas.
+      O celular precisa estar na mesma rede do computador.</p>
+    <p class="dica">Endereço: <code><?= e($linkApp) ?></code></p>
+    <?php if ($ipDeduzido): ?>
+      <p class="dica">O painel foi aberto como "localhost", então o QR usa o IP deste computador na rede. Se o celular não
+        abrir, acesse o painel pelo IP da rede (veja o <code>ipconfig</code>) e use o QR de lá.</p>
+    <?php endif; ?>
+  </div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var alvo = document.getElementById('qr-app');
+  if (typeof qrcode !== 'function') {
+    alvo.textContent = 'Não foi possível gerar o QR code (sem internet?). Use o endereço ao lado.';
+    alvo.classList.add('sem-qr');
+    return;
+  }
+  var qr = qrcode(0, 'M');
+  qr.addData(alvo.dataset.link);
+  qr.make();
+  alvo.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true });
+})();
+</script>
 
 <?php if (!$lidas): ?>
 <section class="sem-folhas">
