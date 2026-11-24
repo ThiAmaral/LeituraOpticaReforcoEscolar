@@ -209,7 +209,8 @@ function ler_folhas_aluno(array $prova, string $turma, array $recortes): array
         $l['arquivo'] = $nomes[$l['arquivo']] ?? basename((string)$l['arquivo']);
         // Toda folha é conferida contra a prova: caderno, número de questões e formato.
         if ($l['ok'] && ($motivo = conferir_formato_da_folha($layout, $l, $gabarito)) !== null) {
-            $l = ['ok' => false, 'erro' => $motivo, 'codigo' => 'formato'] + $l;
+            $codigo = str_contains($motivo, 'caderno') ? 'caderno_diferente' : 'formato_diferente';
+            $l = ['ok' => false, 'erro' => $motivo, 'codigo' => $codigo] + $l;
         }
     }
     unset($l);

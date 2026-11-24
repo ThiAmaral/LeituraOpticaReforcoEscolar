@@ -1,0 +1,7 @@
+# Apache: toda URL /api/... vai para o controlador frontal (index.php).
+RewriteEngine On
+# Repassa o cabeçalho Authorization (token do app), que o Apache às vezes descarta.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
