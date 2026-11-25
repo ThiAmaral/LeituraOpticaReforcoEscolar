@@ -1,8 +1,8 @@
 import { router, Stack, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Platform, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 
-import { Aviso, Carregando, Chip, cor, estilos, FalhaAoCarregar } from '@/componentes/ui';
+import { Aviso, Carregando, Chip, cor, estilos, FalhaAoCarregar, Selo, Simbolo } from '@/componentes/ui';
 import { api, mensagemDeErro } from '@/lib/api';
 import { useSessao } from '@/lib/sessao';
 import type { ProvaResumo } from '@/lib/tipos';
@@ -12,10 +12,14 @@ const POR_PAGINA = 20;
 /**
  * Lista de provas: as mesmas do painel web, na mesma ordem (a mais recente primeiro) e com
  * os mesmos filtros (ano letivo e edição). As páginas seguintes carregam ao rolar.
+ * Abre no ano mais recente, que é o que o professor usa no dia a dia; os outros anos e
+ * "Todos os anos" (primeiro da faixa) ficam numa faixa que rola para o lado, para não crescer com o tempo.
  */
 export default function Provas() {
   const { config, erroConfig, recarregarConfig, sair, sessao } = useSessao();
-  const [ano, setAno] = useState<number | undefined>(undefined);
+  // null: ainda não escolheu, vale o ano mais recente (config.anos vem do mais novo ao mais antigo).
+  const [escolhaAno, setAno] = useState<number | 'todos' | null>(null);
+  const ano = escolhaAno === 'todos' ? undefined : (escolhaAno ?? config?.anos[0]);
   const [edicao, setEdicao] = useState<number | undefined>(undefined);
   const [provas, setProvas] = useState<ProvaResumo[] | null>(null);
   const [total, setTotal] = useState(0);
@@ -25,6 +29,7 @@ export default function Provas() {
   const pagina = useRef({ atual: 0, ultima: 1 });
 
   const carregar = useCallback(async () => {
+    if (!config) return; // sem a configuração ainda não se sabe o ano padrão
     setErro(null);
     try {
       const r = await api.listarProvas({ ano, edicao, pagina: 1, por_pagina: POR_PAGINA });
@@ -34,7 +39,7 @@ export default function Provas() {
     } catch (e) {
       setErro(mensagemDeErro(e));
     }
-  }, [ano, edicao]);
+  }, [config, ano, edicao]);
 
   // Recarrega ao voltar para a tela (depois de escanear) e ao trocar os filtros.
   useFocusEffect(
@@ -72,9 +77,20 @@ export default function Provas() {
     <View style={estilos.tela}>
       <Stack.Screen
         options={{
+          headerLeft: () => (
+            // No navegador o cabeçalho não tem a margem lateral do iOS/Android: põe a mesma à mão.
+            <View style={{ marginRight: 10, marginLeft: Platform.OS === 'web' ? 16 : 0 }}>
+              <Simbolo tamanho={28} />
+            </View>
+          ),
           headerRight: () => (
-            <Pressable onPress={sair} hitSlop={10} accessibilityRole="button">
-              <Text style={{ color: cor.primaria, fontSize: 16, fontWeight: '600' }}>Sair</Text>
+            <Pressable
+              onPress={sair}
+              hitSlop={10}
+              accessibilityRole="button"
+              style={{ marginRight: Platform.OS === 'web' ? 16 : 0 }}
+            >
+              <Text style={{ color: cor.primaria, fontSize: 16, fontWeight: '700' }}>Sair</Text>
             </Pressable>
           ),
         }}
@@ -90,20 +106,20 @@ export default function Provas() {
           <View style={{ gap: 10 }}>
             <Text style={estilos.dica}>{sessao?.professor.email}</Text>
             {config.anos.length > 0 && (
-              <View style={estilos.linha}>
-                <Chip rotulo="Todos os anos" marcado={ano === undefined} onPress={() => setAno(undefined)} />
+              <Faixa rotulo="Ano letivo">
+                <Chip rotulo="Todos os anos" marcado={ano === undefined} onPress={() => setAno('todos')} />
                 {config.anos.map((a) => (
                   <Chip key={a} rotulo={String(a)} marcado={ano === a} onPress={() => setAno(a)} />
                 ))}
-              </View>
+              </Faixa>
             )}
             {config.edicoes.length > 0 && (
-              <View style={estilos.linha}>
+              <Faixa rotulo="Edição">
                 <Chip rotulo="Todas as edições" marcado={edicao === undefined} onPress={() => setEdicao(undefined)} />
                 {config.edicoes.map((e) => (
                   <Chip key={e.numero} rotulo={e.nome} marcado={edicao === e.numero} onPress={() => setEdicao(e.numero)} />
                 ))}
-              </View>
+              </Faixa>
             )}
             {provas !== null && total > 0 && (
               <Text style={estilos.dica}>
@@ -129,6 +145,24 @@ export default function Provas() {
   );
 }
 
+/**
+ * Uma linha de chips que rola para o lado, de borda a borda da tela (o último chip aparece
+ * cortado, o que mostra que há mais). Anula o padding de estilos.conteudo (16) para isso.
+ */
+function Faixa({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      accessibilityLabel={rotulo}
+      style={{ marginHorizontal: -16, flexGrow: 0 }}
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: 'center' }}
+    >
+      {children}
+    </ScrollView>
+  );
+}
+
 function avisarRascunho() {
   const texto = 'Termine o gabarito no web para liberar esta prova.';
   if (Platform.OS === 'web') {
@@ -149,22 +183,7 @@ function CartaoProva({ prova }: { prova: ProvaResumo }) {
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
         <Text style={[estilos.rotulo, { flex: 1, fontSize: 16 }]}>{prova.nome}</Text>
-        {rascunho && (
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '700',
-              color: cor.alerta,
-              backgroundColor: cor.alertaClaro,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
-              borderRadius: 8,
-              alignSelf: 'flex-start',
-            }}
-          >
-            Gabarito pendente
-          </Text>
-        )}
+        {rascunho && <Selo texto="Gabarito pendente" tipo="alerta" />}
       </View>
       <Text style={estilos.dica}>
         {prova.ano} · {prova.edicao_nome} · caderno {prova.caderno}

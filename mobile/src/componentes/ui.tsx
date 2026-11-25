@@ -11,10 +11,11 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
+import Svg, { Circle, Rect } from 'react-native-svg';
 
-/** Cores e medidas do app. Toque mínimo de 44 px, texto grande o bastante para a sala de aula. */
+/** Cores e medidas do app (as mesmas do painel web, em web/estilo.css). Toque mínimo de 44 px, texto grande o bastante para a sala de aula. */
 export const cor = {
-  fundo: '#F4F6F8',
+  fundo: '#EBEDF0',
   superficie: '#FFFFFF',
   texto: '#1B2430',
   suave: '#5B6676',
@@ -27,7 +28,33 @@ export const cor = {
   erroClaro: '#FDECEA',
   alerta: '#9A5B00',
   alertaClaro: '#FFF4DB',
+  campoBorda: '#B9C0CA',
 };
+
+/** Símbolo do sistema: quatro bolinhas de folha de respostas, duas marcadas (o mesmo do web). */
+export function Simbolo({ tamanho = 32 }: { tamanho?: number }) {
+  return (
+    <View aria-hidden>
+      <Svg width={tamanho} height={tamanho} viewBox="0 0 32 32">
+        <Rect width={32} height={32} rx={8} fill={cor.primaria} />
+        <Circle cx={11} cy={11} r={4} fill="#FFFFFF" />
+        <Circle cx={21} cy={11} r={3.2} fill="none" stroke="#FFFFFF" strokeWidth={1.6} />
+        <Circle cx={11} cy={21} r={3.2} fill="none" stroke="#FFFFFF" strokeWidth={1.6} />
+        <Circle cx={21} cy={21} r={4} fill="#FFFFFF" />
+      </Svg>
+    </View>
+  );
+}
+
+/** Selo de situação (Liberada, Gabarito pendente, Cancelada), igual ao `.selo` do web. */
+export function Selo({ texto, tipo }: { texto: string; tipo: 'certo' | 'alerta' | 'erro' }) {
+  const [fundo, texto_] = {
+    certo: [cor.certoClaro, cor.certo],
+    alerta: [cor.alertaClaro, cor.alerta],
+    erro: [cor.erroClaro, cor.erro],
+  }[tipo];
+  return <Text style={[estilos.selo, { backgroundColor: fundo, color: texto_ }]}>{texto}</Text>;
+}
 
 export function Botao({
   titulo,
@@ -170,29 +197,29 @@ export const estilos = StyleSheet.create({
   botao: {
     minHeight: 48,
     borderRadius: 10,
-    borderWidth: 1.5,
-    paddingHorizontal: 18,
+    borderWidth: 1,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  botaoTexto: { fontSize: 16, fontWeight: '600' },
+  botaoTexto: { fontSize: 16, fontWeight: '700' },
   chip: {
     minHeight: 40,
     minWidth: 44,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipCompacto: { minHeight: 36, minWidth: 40, paddingHorizontal: 8 },
-  chipTexto: { fontSize: 15, fontWeight: '600' },
-  rotulo: { fontSize: 15, fontWeight: '600', color: cor.texto },
-  dica: { fontSize: 13, color: cor.suave },
+  chipTexto: { fontSize: 15, fontWeight: '700' },
+  rotulo: { fontSize: 15, fontWeight: '700', color: cor.texto },
+  dica: { fontSize: 14, color: cor.suave },
   campo: {
     minHeight: 48,
-    borderWidth: 1.5,
-    borderColor: cor.borda,
+    borderWidth: 1,
+    borderColor: cor.campoBorda,
     borderRadius: 10,
     paddingHorizontal: 12,
     fontSize: 16,
@@ -201,13 +228,22 @@ export const estilos = StyleSheet.create({
   },
   cartao: {
     backgroundColor: cor.superficie,
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 14,
+    padding: 16,
     gap: 8,
     borderWidth: 1,
     borderColor: cor.borda,
   },
   aviso: { borderRadius: 10, borderWidth: 1, padding: 12 },
+  selo: {
+    fontSize: 13,
+    fontWeight: '700',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    overflow: 'hidden',
+    alignSelf: 'flex-start',
+  },
   secao: { fontSize: 17, fontWeight: '700', color: cor.texto },
   titulo: { fontSize: 20, fontWeight: '700', color: cor.texto },
   texto: { fontSize: 15, color: cor.texto },

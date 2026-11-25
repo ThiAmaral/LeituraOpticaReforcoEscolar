@@ -60,23 +60,18 @@ cabecalho('Provas', 'provas');
 <?php if ($provas): ?>
 <div class="lista-provas">
   <table class="tabela">
-    <thead><tr><th>Prova</th><th>Ano letivo</th><th class="num">Turmas</th><th class="num">Folhas lidas</th><th>Criada em</th></tr></thead>
+    <thead><tr><th>Prova</th><th>Ano letivo</th><th class="num">Turmas</th><th class="num">Folhas lidas</th><th>Criada em</th><th>Status</th></tr></thead>
     <tbody>
-    <?php foreach ($provas as $p): ?>
+    <?php foreach ($provas as $p): [$rotuloStatus, $classeStatus] = status_da_prova($p); ?>
       <tr>
         <td>
-          <?php if ($p['status'] === 'rascunho'): ?>
-            <a href="gabarito.php?id=<?= $p['id'] ?>"><?= e($p['nome']) ?></a>
-            <a class="selo atencao" href="gabarito.php?id=<?= $p['id'] ?>">Gabarito a revisar</a>
-          <?php else: ?>
-            <a href="prova.php?id=<?= $p['id'] ?>"><?= e($p['nome']) ?></a>
-          <?php endif; ?>
-          <?php if ($p['situacao'] === 'cancelada'): ?><span class="selo cancelada">Cancelada</span><?php endif; ?>
+          <a href="<?= $p['status'] === 'rascunho' ? 'gabarito.php' : 'prova.php' ?>?id=<?= $p['id'] ?>"><?= e($p['nome']) ?></a>
         </td>
         <td><?= e($p['ano'] . ' · ' . rotulo_edicao($p['edicao'])) ?></td>
         <td class="num"><?= $p['turmas'] ?></td>
         <td class="num"><?= $p['folhas'] ?></td>
         <td><?= e(date('d/m/Y', strtotime($p['criado_em']))) ?></td>
+        <td><span class="selo <?= $classeStatus ?>"><?= e($rotuloStatus) ?></span></td>
       </tr>
     <?php endforeach; ?>
     </tbody>
