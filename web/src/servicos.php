@@ -16,6 +16,10 @@ function listar_provas(array $entrada): array
 {
     $filtros = filtros_de_provas();
     [$where, $params, $escolhidos] = aplicar_filtros($filtros, $entrada);
+    // Situação: pode escolher mais de uma (?situacao[]=ativa&situacao[]=cancelada); sem escolha, só as ativas.
+    $situacoes = situacoes_escolhidas($entrada['situacao'] ?? null);
+    $where .= ' AND p.situacao IN (' . implode(', ', array_fill(0, count($situacoes), '?')) . ')';
+    $params = array_merge($params, $situacoes);
     $porPagina = (int)($entrada['por_pagina'] ?? 0);
     $porPagina = in_array($porPagina, ITENS_POR_PAGINA, true) ? $porPagina : ITENS_POR_PAGINA_PADRAO;
 
@@ -26,7 +30,7 @@ function listar_provas(array $entrada): array
     $pagina = min(max(1, (int)($entrada['pagina'] ?? 1)), $paginas);
 
     $st = db()->prepare("
-        SELECT p.id, p.nome, p.ano, p.edicao, p.status, p.caderno, p.criado_em,
+        SELECT p.id, p.nome, p.ano, p.edicao, p.status, p.situacao, p.caderno, p.criado_em,
                (SELECT COUNT(*) FROM folhas f WHERE f.prova_id = p.id AND f.erro IS NULL) AS folhas,
                (SELECT COUNT(DISTINCT f.turma) FROM folhas f WHERE f.prova_id = p.id AND f.erro IS NULL) AS turmas
         FROM provas p
@@ -41,8 +45,16 @@ function listar_provas(array $entrada): array
         }
     }
     unset($p);
-    return ['provas' => $provas, 'filtros' => $filtros, 'escolhidos' => $escolhidos, 'pagina' => $pagina,
-        'paginas' => $paginas, 'por_pagina' => $porPagina, 'total' => $total];
+    return ['provas' => $provas, 'filtros' => $filtros, 'escolhidos' => $escolhidos, 'situacoes' => $situacoes,
+        'pagina' => $pagina, 'paginas' => $paginas, 'por_pagina' => $porPagina, 'total' => $total];
+}
+
+/** Situações pedidas na lista (array ou "ativa,cancelada"), só as válidas, na ordem de SITUACOES; sem nenhuma, a padrão. */
+function situacoes_escolhidas(mixed $valor): array
+{
+    $pedidas = is_array($valor) ? $valor : explode(',', (string)$valor);
+    $validas = array_values(array_intersect(array_keys(SITUACOES), array_map(fn($v) => trim((string)$v), $pedidas)));
+    return $validas ?: SITUACOES_PADRAO;
 }
 
 /**
@@ -144,6 +156,39 @@ function descartar_rascunho(array $prova): void
     db()->prepare('DELETE FROM provas WHERE id = ?')->execute([$prova['id']]);
 }
 
+/** Cancela uma prova ativa: sai da lista padrão e do app, e para de receber folhas. Nada é apagado. */
+function cancelar_prova(array $prova): void
+{
+    if ($prova['situacao'] !== 'ativa') {
+        throw new ErroDoUsuario('Esta prova já está cancelada.', 409);
+    }
+    db()->prepare("UPDATE provas SET situacao = 'cancelada' WHERE id = ?")->execute([$prova['id']]);
+}
+
+/** Ativa de novo uma prova cancelada, do jeito que estava. */
+function ativar_prova(array $prova): void
+{
+    if ($prova['situacao'] !== 'cancelada') {
+        throw new ErroDoUsuario('Esta prova já está ativa.', 409);
+    }
+    db()->prepare("UPDATE provas SET situacao = 'ativa' WHERE id = ?")->execute([$prova['id']]);
+}
+
+/** Exclui de vez uma prova cancelada, com o gabarito, as folhas lidas e as imagens delas. */
+function excluir_prova(array $prova): void
+{
+    if ($prova['situacao'] !== 'cancelada') {
+        throw new ErroDoUsuario('Só uma prova cancelada pode ser excluída. Cancele a prova antes.', 409);
+    }
+    $id = (int)$prova['id'];
+    $st = db()->prepare('SELECT imagem_debug FROM folhas WHERE prova_id = ? AND imagem_debug IS NOT NULL');
+    $st->execute([$id]);
+    $imagens = $st->fetchAll(PDO::FETCH_COLUMN);
+    db()->prepare('DELETE FROM provas WHERE id = ?')->execute([$id]); // questões e folhas vão junto (ON DELETE CASCADE)
+    apagar_imagens($imagens);
+    @rmdir(pasta_imagens() . "/$id"); // só some se ficou vazia
+}
+
 /** "8A": sem espaços sobrando, até 20 caracteres. */
 function turma_valida(string $turma): string
 {
@@ -184,6 +229,9 @@ function ler_folhas_aluno(array $prova, string $turma, array $recortes): array
 {
     if ($prova['status'] === 'rascunho') {
         throw new ErroDoUsuario('Libere o gabarito no painel web antes de enviar as folhas dos alunos.', 409);
+    }
+    if ($prova['situacao'] === 'cancelada') {
+        throw new ErroDoUsuario('Esta prova está cancelada. Ative-a no painel web para enviar as folhas.', 409);
     }
     $turma = turma_valida($turma);
     if (!$recortes) {

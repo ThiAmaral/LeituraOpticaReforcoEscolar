@@ -310,3 +310,18 @@ a.botao.secundario:hover { background: var(--papel); }
 .qr-imagem.sem-qr { height: auto; color: var(--grafite); font-size: 14px; }
 .abrir-app { max-width: 480px; text-align: center; }
 .abrir-app a.botao { background: var(--tinta); color: #fff; }
+
+/* Situação da prova (ativa / cancelada) */
+.situacao-prova { margin: 12px 0 0; }
+.situacao-prova form { display: inline; margin: 0; }
+.situacao-prova button.link { padding: 4px 0; }
+.situacao-prova.cancelada { padding: 12px 16px; border-radius: var(--raio); background: var(--atencao-fundo); color: var(--atencao); max-width: 75ch; }
+.situacao-prova.cancelada p { margin: 0 0 10px; }
+.acoes-situacao { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+button.secundario.perigo { color: var(--reforco); border-color: var(--reforco); }
+.selo.cancelada { background: var(--reforco-fundo); color: var(--reforco); }
+.filtro-situacao { border: 0; margin: 0; padding: 0; display: grid; gap: 4px; }
+.filtro-situacao legend { font-weight: 700; font-size: 14px; padding: 0; margin-bottom: 4px; }
+.filtro-situacao .situacoes { display: flex; gap: 16px; min-height: 40px; align-items: center; }
+.filtros .filtro-situacao label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; font-size: 15px; }
+.filtro-situacao input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; accent-color: var(--tinta); }

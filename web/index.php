@@ -5,8 +5,13 @@ require __DIR__ . '/lib.php';
 iniciar_pagina();
 
 $lista = listar_provas($_GET);
-['provas' => $provas, 'filtros' => $filtros, 'escolhidos' => $escolhidos, 'pagina' => $pagina,
-    'paginas' => $paginas, 'por_pagina' => $porPagina, 'total' => $total] = $lista;
+['provas' => $provas, 'filtros' => $filtros, 'escolhidos' => $escolhidos, 'situacoes' => $situacoes,
+    'pagina' => $pagina, 'paginas' => $paginas, 'por_pagina' => $porPagina, 'total' => $total] = $lista;
+// A situação só entra nos links quando foge do padrão (só ativas).
+if ($situacoes !== SITUACOES_PADRAO) {
+    $escolhidos['situacao'] = $situacoes;
+}
+$aviso = isset($_GET['excluida']) ? 'Prova excluída.' : null;
 $temProvas = (bool)db()->query('SELECT 1 FROM provas LIMIT 1')->fetchColumn();
 
 /** Link desta lista mantendo os filtros e a quantidade por página. */
@@ -24,6 +29,7 @@ $ultimoItem = min($total, $pagina * $porPagina);
 
 cabecalho('Provas', 'provas');
 ?>
+<?php if ($aviso): ?><p class="aviso"><?= e($aviso) ?></p><?php endif; ?>
 
 <?php if ($temProvas): ?>
 <form method="get" class="filtros" role="search" aria-label="Filtrar provas">
@@ -37,6 +43,14 @@ cabecalho('Provas', 'provas');
       </select>
     </label>
   <?php endforeach; ?>
+  <fieldset class="filtro-situacao">
+    <legend>Situação</legend>
+    <div class="situacoes">
+      <?php foreach (SITUACOES as $valor => $rotulo): ?>
+        <label><input type="checkbox" name="situacao[]" value="<?= $valor ?>" <?= in_array($valor, $situacoes, true) ? 'checked' : '' ?>> <?= e($rotulo) ?></label>
+      <?php endforeach; ?>
+    </div>
+  </fieldset>
   <?php if ($porPagina !== ITENS_POR_PAGINA_PADRAO): ?><input type="hidden" name="por_pagina" value="<?= $porPagina ?>"><?php endif; ?>
   <button type="submit">Filtrar</button>
   <?php if ($escolhidos): ?><a class="limpar" href="<?= e(link_lista([], $porPagina, 1)) ?>">Limpar filtros</a><?php endif; ?>
@@ -57,6 +71,7 @@ cabecalho('Provas', 'provas');
           <?php else: ?>
             <a href="prova.php?id=<?= $p['id'] ?>"><?= e($p['nome']) ?></a>
           <?php endif; ?>
+          <?php if ($p['situacao'] === 'cancelada'): ?><span class="selo cancelada">Cancelada</span><?php endif; ?>
         </td>
         <td><?= e($p['ano'] . ' · ' . rotulo_edicao($p['edicao'])) ?></td>
         <td class="num"><?= $p['turmas'] ?></td>
@@ -101,7 +116,9 @@ cabecalho('Provas', 'provas');
     </nav>
 
     <form method="get" class="por-pagina">
-      <?php foreach ($escolhidos as $chave => $valor): ?><input type="hidden" name="<?= e($chave) ?>" value="<?= e($valor) ?>"><?php endforeach; ?>
+      <?php foreach ($escolhidos as $chave => $valor): foreach ((array)$valor as $v): ?>
+        <input type="hidden" name="<?= e($chave) . (is_array($valor) ? '[]' : '') ?>" value="<?= e($v) ?>">
+      <?php endforeach; endforeach; ?>
       <label>Itens por página
         <select name="por_pagina" onchange="this.form.submit()">
           <?php foreach (ITENS_POR_PAGINA as $n): ?>

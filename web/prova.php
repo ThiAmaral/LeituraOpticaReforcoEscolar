@@ -81,8 +81,11 @@ cabecalho($prova['nome'], '', 'index.php');
 </p>
 <p class="so-impressao meta">Relatório <?= $filtro !== '' ? 'da turma ' . e($filtro) : (count($turmas) > 1 ? 'de todas as turmas' : '') ?> gerado em <?= date('d/m/Y') ?> às <?= date('H:i') ?>, com <?= count($visiveis) ?> folha(s).</p>
 
+<?= quadro_situacao($prova) ?>
+
 <?php if ($aviso): ?><p class="aviso"><?= e($aviso) ?></p><?php endif; ?>
 
+<?php if ($prova['situacao'] === 'ativa'): // prova cancelada não abre no app ?>
 <section class="qr-app nao-imprimir" aria-labelledby="titulo-qr-app">
   <div id="qr-app" class="qr-imagem" data-link="<?= e($linkApp) ?>" role="img" aria-label="QR code que abre esta prova no aplicativo"></div>
   <div>
@@ -112,6 +115,7 @@ cabecalho($prova['nome'], '', 'index.php');
   alvo.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true });
 })();
 </script>
+<?php endif; ?>
 
 <?php if (!$lidas): ?>
 <section class="sem-folhas">
