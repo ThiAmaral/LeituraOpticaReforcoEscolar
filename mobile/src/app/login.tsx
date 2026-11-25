@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Aviso, Botao, Campo, cor, estilos } from '@/componentes/ui';
+import { Aviso, Botao, Campo, estilos, Simbolo } from '@/componentes/ui';
 import { useSessao } from '@/lib/sessao';
 import { configuracaoFaltando } from '@/lib/credenciais';
 
@@ -31,7 +31,10 @@ export default function Login() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={[estilos.conteudo, { flexGrow: 1, justifyContent: 'center' }]}>
           <View style={{ gap: 6, marginBottom: 8 }}>
-            <Text style={{ fontSize: 28, fontWeight: '800', color: cor.primaria }}>Corretor de provas</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Simbolo tamanho={44} />
+              <Text style={[estilos.titulo, { fontSize: 28, flexShrink: 1 }]}>Panorama da Prova</Text>
+            </View>
             <Text style={estilos.dica}>Fotografe as folhas da turma e veja a correção na hora. Entre com a mesma conta do painel web.</Text>
           </View>
           {configuracaoFaltando.length > 0 && (

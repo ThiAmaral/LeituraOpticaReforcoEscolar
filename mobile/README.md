@@ -1,4 +1,4 @@
-# Aplicativo — Corretor de provas
+# Aplicativo — Panorama da Prova
 
 Aplicativo iOS/Android em Expo (React Native, TypeScript) para fotografar as folhas de
 resposta de cada turma e ver a correção na hora. O app não tem banco próprio: tudo passa

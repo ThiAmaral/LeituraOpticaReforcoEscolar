@@ -967,14 +967,16 @@ function cabecalho(string $titulo, string $menu = '', string $voltar = ''): void
     $professor = professor_logado();
     echo '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . e($titulo) . ' | Corretor de provas</title>'
+        . '<title>' . e($titulo) . ' | Panorama da Prova</title>'
         . '<link rel="preconnect" href="https://fonts.googleapis.com">'
         . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">'
-        . '<link rel="stylesheet" href="estilo.css"></head><body><main>';
-    echo '<header class="topo"><nav class="menu" aria-label="Menu principal">'
-        . '<a class="marca" href="index.php"' . ($menu === 'provas' ? ' aria-current="page"' : '') . '>Corretor de provas</a>';
+        . '<link rel="stylesheet" href="estilo.css"><script src="dropdown.js" defer></script></head><body>';
+    // Barra superior branca, na largura toda; o conteúdo dela fica alinhado com o <main>.
+    echo '<header class="topo"><div class="topo-interno"><a class="marca" href="index.php">' . simbolo_marca() . 'Panorama da Prova</a>'
+        . '<nav class="menu" aria-label="Menu principal">';
     if ($professor) {
-        echo '<a class="item-menu" href="nova-prova.php"' . ($menu === 'nova' ? ' aria-current="page"' : '') . '>Nova prova</a>';
+        echo '<a class="item-menu" href="index.php"' . ($menu === 'provas' ? ' aria-current="page"' : '') . '>Provas</a>'
+            . '<a class="item-menu" href="nova-prova.php"' . ($menu === 'nova' ? ' aria-current="page"' : '') . '>Nova prova</a>';
     }
     echo '</nav>';
     if ($voltar) {
@@ -984,7 +986,29 @@ function cabecalho(string $titulo, string $menu = '', string $voltar = ''): void
         echo '<form method="post" action="sair.php" class="sessao">' . campo_csrf()
             . '<span>' . e($professor['email']) . '</span><button type="submit" class="secundario">Sair</button></form>';
     }
-    echo '</header><h1>' . e($titulo) . '</h1>';
+    echo '</div></header><main><h1>' . e($titulo) . '</h1>';
+}
+
+/**
+ * Status da prova num selo só, com os mesmos nomes do aplicativo: cancelada vale mais que o
+ * gabarito pendente (rascunho); senão, a prova está liberada. Devolve [rótulo, classe do .selo].
+ */
+function status_da_prova(array $prova): array
+{
+    return match (true) {
+        $prova['situacao'] === 'cancelada' => ['Cancelada', 'cancelada'],
+        $prova['status'] === 'rascunho' => ['Gabarito pendente', 'atencao'],
+        default => ['Liberada', 'certo'],
+    };
+}
+
+/** Símbolo do sistema: quatro bolinhas de folha de respostas, duas marcadas (o mesmo do app). */
+function simbolo_marca(): string
+{
+    return '<svg class="simbolo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">'
+        . '<rect width="32" height="32" rx="8" fill="currentColor"/>'
+        . '<circle cx="11" cy="11" r="4" fill="#fff"/><circle cx="21" cy="11" r="3.2" fill="none" stroke="#fff" stroke-width="1.6"/>'
+        . '<circle cx="11" cy="21" r="3.2" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="21" cy="21" r="4" fill="#fff"/></svg>';
 }
 
 /**
