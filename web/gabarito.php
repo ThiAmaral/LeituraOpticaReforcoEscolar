@@ -59,6 +59,7 @@ cabecalho($prova['nome'], '', $rascunho ? 'index.php' : "prova.php?id=$id");
   Caderno <strong><?= e($prova['caderno']) ?></strong> · <?= count($questoes) ?> questões · alternativas <?= e(reset($alts) . '–' . end($alts)) ?>
   · <?= $fixa ? 'todas as questões de ' . e($fixa) : 'todas as disciplinas' ?>.
 </p>
+<?= quadro_situacao($prova) ?>
 
 <?php if ($rascunho): ?>
   <p class="dica">Rascunho: <span id="contador-respostas"><?= $preenchidas ?> de <?= count($questoes) ?></span> respostas preenchidas.

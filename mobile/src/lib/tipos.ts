@@ -22,6 +22,8 @@ export type ProvaResumo = {
   edicao: number;
   edicao_nome: string;
   status: 'rascunho' | 'ativa';
+  /** Cancelada: some da lista do app e não recebe folhas até ser ativada no web. */
+  situacao: 'ativa' | 'cancelada';
   caderno: string;
   turmas: number;
   folhas: number;

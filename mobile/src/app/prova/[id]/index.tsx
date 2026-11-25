@@ -38,6 +38,15 @@ export default function DetalheProva() {
 
   if (erro) return <FalhaAoCarregar mensagem={erro} tentarDeNovo={carregar} />;
   if (!prova) return <Carregando />;
+  if (prova.situacao === 'cancelada') {
+    return (
+      <View style={[estilos.tela, estilos.conteudo]}>
+        <Stack.Screen options={{ title: prova.nome }} />
+        <Aviso tipo="alerta" texto="Prova cancelada: ative-a no painel web para escanear as folhas." />
+        <Botao titulo="Voltar para as provas" tipo="secundario" onPress={() => router.back()} />
+      </View>
+    );
+  }
   if (prova.status === 'rascunho') {
     return (
       <View style={[estilos.tela, estilos.conteudo]}>

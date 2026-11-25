@@ -266,6 +266,11 @@ const NOME_TODAS_DISCIPLINAS = 'Geral';
 
 const DIFICULDADES = ['facil' => 'Fácil', 'medio' => 'Médio', 'dificil' => 'Difícil'];
 
+/** Situação da prova: nasce ativa; cancelada pode voltar a ser ativa ou ser excluída. */
+const SITUACOES = ['ativa' => 'Ativa', 'cancelada' => 'Cancelada'];
+/** Situações mostradas na lista quando o professor não escolhe nenhuma. */
+const SITUACOES_PADRAO = ['ativa'];
+
 /** "Matemática · 2026 · 8º ano · 1ª edição (2265M0801)" */
 function nome_da_prova(?string $disciplina, int $ano, int $anoEscolar, int $edicao, string $caderno): string
 {
@@ -980,6 +985,33 @@ function cabecalho(string $titulo, string $menu = '', string $voltar = ''): void
             . '<span>' . e($professor['email']) . '</span><button type="submit" class="secundario">Sair</button></form>';
     }
     echo '</header><h1>' . e($titulo) . '</h1>';
+}
+
+/**
+ * Situação da prova no topo da página dela. Ativa: botão para cancelar. Cancelada: aviso, com
+ * os botões para ativar de novo e para excluir de vez. Os formulários vão para situacao.php.
+ */
+function quadro_situacao(array $prova): string
+{
+    $form = fn(string $acao, string $rotulo, string $classe, string $confirmar = '') =>
+        '<form method="post" action="situacao.php"' . ($confirmar ? ' onsubmit="return confirm(' . e(json_encode($confirmar, JSON_UNESCAPED_UNICODE)) . ')"' : '') . '>'
+        . campo_csrf() . '<input type="hidden" name="id" value="' . (int)$prova['id'] . '">'
+        . '<input type="hidden" name="acao" value="' . $acao . '">'
+        . '<button type="submit" class="' . $classe . '">' . e($rotulo) . '</button></form>';
+
+    if ($prova['situacao'] === 'cancelada') {
+        return '<div class="situacao-prova cancelada nao-imprimir" role="status">'
+            . '<p><strong>Prova cancelada.</strong> Não aparece na lista padrão nem no aplicativo, e não recebe folhas. '
+            . 'Ative de novo para voltar a usar, ou exclua de vez.</p><div class="acoes-situacao">'
+            . $form('ativar', 'Ativar prova', '')
+            . $form('excluir', 'Excluir prova', 'secundario perigo',
+                'Excluir esta prova de vez? O gabarito, as folhas lidas e as imagens serão apagados, e isso não pode ser desfeito.')
+            . '</div></div>';
+    }
+    return '<div class="situacao-prova nao-imprimir">'
+        . $form('cancelar', 'Cancelar prova', 'link perigo',
+            'Cancelar esta prova? Ela sai da lista padrão e do aplicativo e para de receber folhas. Nada é apagado: você pode ativá-la de novo.')
+        . '</div>';
 }
 
 function rodape(): void

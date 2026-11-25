@@ -112,6 +112,13 @@ function migracoes(): array
         );
         CREATE INDEX folhas_prova_turma ON folhas (prova_id, turma);
         SQL,
+
+        // 2: situação da prova, à parte do status do gabarito (rascunho/ativa). Toda prova nasce
+        // ativa; cancelada sai da lista padrão e do app, e só ela pode ser excluída.
+        <<<SQL
+        ALTER TABLE provas ADD COLUMN situacao TEXT NOT NULL DEFAULT 'ativa'
+            CHECK (situacao IN ('ativa', 'cancelada'));
+        SQL,
     ];
 }
 
